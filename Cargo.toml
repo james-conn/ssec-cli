@@ -1,5 +1,5 @@
 [package]
-name = "ssec"
+name = "ssec-cli"
 version = "0.1.0"
 edition = "2024"
 description = "command-line interface for reading and writing the SSEC file format"
@@ -7,13 +7,19 @@ categories = [ "command-line-utilities", "security" ]
 authors = [ "James Connolly <me@j-conn.com>" ]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/james-conn/ssec-cli"
+default-run = "ssec"
 
 include = [
 	"/Cargo.toml",
 	"/src/*.rs",
+	"/src/bin/ssec.rs",
 	"LICENSE-MIT",
 	"LICENSE-APACHE"
 ]
+
+[[bin]]
+name = "ssec"
+path = "src/bin/ssec.rs"
 
 [dependencies.clap]
 version = "4.5"

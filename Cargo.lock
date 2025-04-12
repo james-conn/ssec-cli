@@ -1256,7 +1256,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ssec"
+name = "ssec-cli"
 version = "0.1.0"
 dependencies = [
  "bytes",

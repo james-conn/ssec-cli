@@ -1,15 +1,7 @@
 use clap::Parser;
 use std::process::ExitCode;
-
-mod cli;
-use cli::{Cli, Command};
-
-mod file;
-
-mod enc;
-mod dec;
-
-pub const BAR_STYLE: &str = "[{elapsed_precise}] {binary_bytes_per_sec} {bar} {binary_bytes}/{binary_total_bytes} ({eta})";
+use ssec_cli::cli::{Cli, Command};
+use ssec_cli::{enc, dec};
 
 #[inline]
 fn handle_err(result: Result<(), ()>) -> ExitCode {

@@ -8,6 +8,13 @@ authors = [ "James Connolly <me@j-conn.com>" ]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/james-conn/ssec-cli"
 
+include = [
+	"/Cargo.toml",
+	"/src/*.rs",
+	"LICENSE-MIT",
+	"LICENSE-APACHE"
+]
+
 [dependencies.clap]
 version = "4.5"
 features = [ "derive" ]

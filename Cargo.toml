@@ -1,0 +1,52 @@
+[package]
+name = "ssec"
+version = "0.1.0"
+edition = "2024"
+description = "command-line interface for reading and writing the SSEC file format"
+categories = [ "command-line-utilities", "security" ]
+authors = [ "James Connolly <me@j-conn.com>" ]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/james-conn/ssec-cli"
+
+[dependencies.clap]
+version = "4.5"
+features = [ "derive" ]
+
+[dependencies.tokio]
+version = "1"
+features = [ "rt-multi-thread", "macros", "fs", "io-util" ]
+
+[dependencies.tokio-util]
+version = "0.7"
+features = [ "io" ]
+
+[dependencies.rand]
+version = "0.9"
+default-features = false
+features = [ "os_rng" ]
+
+[dependencies.reqwest]
+version = "0.12"
+default-features = false
+features = [ "rustls-tls", "stream" ]
+
+[dependencies.indicatif]
+version = "0.17"
+features = [ "tokio" ]
+
+[dependencies]
+ssec-core = "0.3"
+futures-util = "0.3"
+zeroize = "1.8"
+rpassword = "7.3"
+url = "2.5"
+tempfile = "3"
+bytes = "1"
+
+[build-dependencies.clap]
+version = "4.5"
+features = [ "derive" ]
+
+[build-dependencies]
+clap_complete = "4.5"
+url = "2.5"

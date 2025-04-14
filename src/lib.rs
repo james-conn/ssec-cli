@@ -20,11 +20,21 @@ fn handle_err(result: Result<(), ()>) -> std::process::ExitCode {
 
 trait GetBufRead: Send + 'static {
 	fn get_bufread(&self) -> impl std::io::BufRead;
+
+	// the `rpassword` crate won't hide input if a custom `BufRead` is passed in
+	#[inline]
+	fn is_stdin() -> bool {
+		false
+	}
 }
 
 impl GetBufRead for std::io::Stdin {
 	fn get_bufread(&self) -> impl std::io::BufRead {
 		self.lock()
+	}
+
+	fn is_stdin() -> bool {
+		true
 	}
 }
 

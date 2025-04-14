@@ -35,10 +35,6 @@ pub async fn enc(args: EncArgs) -> Result<(), ()> {
 		return Ok(());
 	}
 
-	let progress = ProgressBar::new(f_in_len);
-	progress.set_style(ProgressStyle::with_template(BAR_STYLE).unwrap());
-	let f_in = progress.wrap_async_read(f_in);
-
 	let s = tokio_util::io::ReaderStream::new(f_in);
 	let mut enc = tokio::task::spawn_blocking(move || {
 		let spinner = ProgressBar::new_spinner();
@@ -65,10 +61,13 @@ pub async fn enc(args: EncArgs) -> Result<(), ()> {
 		}
 	};
 
-	progress.reset();
+	let progress = ProgressBar::new(enc.total_output_len());
+	progress.set_style(ProgressStyle::with_template(BAR_STYLE).unwrap());
 
 	while let Some(bytes) = enc.next().await {
-		f_out.write_all(&bytes.unwrap()).await.unwrap();
+		let b = bytes.unwrap();
+		progress.inc(b.len() as u64);
+		f_out.write_all(&b).await.unwrap();
 	}
 
 	f_out.shutdown().await.unwrap();

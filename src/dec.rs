@@ -6,7 +6,8 @@ use indicatif::{ProgressBar, ProgressStyle};
 use std::path::PathBuf;
 use crate::cli::{DecArgs, FetchArgs};
 use crate::file::new_async_tempfile;
-use crate::BAR_STYLE;
+use crate::password::prompt_password;
+use crate::{BAR_STYLE, GetBufRead};
 
 const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
 
@@ -48,18 +49,14 @@ async fn dec_stream_to<E: std::error::Error, S: Stream<Item = Result<bytes::Byte
 	Ok(())
 }
 
-async fn prompt_password() -> Result<Zeroizing<Vec<u8>>, ()> {
-	tokio::task::spawn_blocking(move || {
-		rpassword::prompt_password("password: ")
-			.map(String::into_bytes)
-			.map(Zeroizing::new)
-	}).await.unwrap().map_err(|e| {
+pub async fn dec_file(
+	args: DecArgs,
+	reader: impl GetBufRead,
+	writer: impl std::io::Write + Send + 'static
+) -> Result<(), ()> {
+	let password = prompt_password(reader, writer).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
-	})
-}
-
-pub async fn dec_file(args: DecArgs) -> Result<(), ()> {
-	let password = prompt_password().await?;
+	})?;
 
 	let f_in = tokio::fs::File::open(&args.in_file).await.map_err(|e| {
 		eprintln!("failed to open file {:?}: {e}", args.in_file);
@@ -69,8 +66,14 @@ pub async fn dec_file(args: DecArgs) -> Result<(), ()> {
 	dec_stream_to(s, password, args.out_file).await
 }
 
-pub async fn dec_fetch(args: FetchArgs) -> Result<(), ()> {
-	let password = prompt_password().await?;
+pub async fn dec_fetch(
+	args: FetchArgs,
+	reader: impl GetBufRead,
+	writer: impl std::io::Write + Send + 'static
+) -> Result<(), ()> {
+	let password = prompt_password(reader, writer).await.map_err(|e| {
+		eprintln!("failed to read password interactively: {e}");
+	})?;
 
 	let client = reqwest::Client::new();
 

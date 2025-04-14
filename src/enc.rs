@@ -1,19 +1,20 @@
 use ssec_core::Encrypt;
 use futures_util::StreamExt;
 use tokio::io::AsyncWriteExt;
-use zeroize::Zeroizing;
 use rand::rngs::OsRng;
 use indicatif::{ProgressBar, ProgressStyle};
 use crate::cli::EncArgs;
-use crate::BAR_STYLE;
+use crate::password::prompt_password;
+use crate::{BAR_STYLE, GetBufRead};
 
 const SPINNER_STYLE: &str = "{spinner} deriving encryption key";
 
-pub async fn enc(args: EncArgs) -> Result<(), ()> {
-	let password = tokio::task::spawn_blocking(move || {
-		rpassword::prompt_password("password: ")
-			.map(Zeroizing::new)
-	}).await.unwrap().map_err(|e| {
+pub async fn enc(
+	args: EncArgs,
+	reader: impl GetBufRead,
+	writer: impl std::io::Write + Send + 'static
+) -> Result<(), ()> {
+	let password = prompt_password(reader, writer).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
 	})?;
 
@@ -40,7 +41,7 @@ pub async fn enc(args: EncArgs) -> Result<(), ()> {
 		let spinner = ProgressBar::new_spinner();
 		spinner.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
 		spinner.enable_steady_tick(std::time::Duration::from_millis(100));
-		Encrypt::new_uncompressed(s, password.as_bytes(), &mut OsRng, f_in_len)
+		Encrypt::new_uncompressed(s, &password, &mut OsRng, f_in_len)
 	}).await.unwrap().unwrap();
 
 	let mut f_out = match args.out_file {

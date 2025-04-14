@@ -64,3 +64,11 @@ features = [ "derive" ]
 [build-dependencies]
 clap_complete = "4.5"
 url = "2.5"
+
+[dev-dependencies.rand]
+version = "0.9"
+default-features = false
+features = [ "small_rng" ]
+
+[profile.test]
+opt-level = 1

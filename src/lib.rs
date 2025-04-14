@@ -5,6 +5,9 @@ mod password;
 mod enc;
 mod dec;
 
+#[cfg(test)]
+mod tests;
+
 const BAR_STYLE: &str = "[{elapsed_precise}] {binary_bytes_per_sec} {bar} {binary_bytes}/{binary_total_bytes} ({eta})";
 
 #[inline]

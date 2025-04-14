@@ -1,4 +1,4 @@
-use ssec_core::Decrypt;
+use ssec_core::decrypt::{Decrypt, DecryptionError};
 use futures_util::{Stream, StreamExt};
 use tokio::io::AsyncWriteExt;
 use zeroize::Zeroizing;
@@ -39,7 +39,19 @@ async fn dec_stream_to<E: std::error::Error, S: Stream<Item = Result<bytes::Byte
 			}
 		}
 
-		f_out.as_mut().write_all(&bytes.unwrap()).await.unwrap();
+		let b = match bytes {
+			Ok(b) => b,
+			Err(DecryptionError::PasswordIncorrect) => {
+				eprintln!("password incorrect");
+				return Err(());
+			}
+			Err(e) => {
+				eprintln!("{e}");
+				return Err(());
+			},
+		};
+
+		f_out.as_mut().write_all(&b).await.unwrap();
 	}
 
 	f_out.as_mut().shutdown().await.unwrap();

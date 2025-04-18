@@ -35,9 +35,13 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 
 	let s = tokio_util::io::ReaderStream::new(f_in);
 	let mut enc = tokio::task::spawn_blocking(move || {
-		let spinner = ProgressBar::new_spinner();
+		let spinner = match B::is_interactive() {
+			true => ProgressBar::new_spinner(),
+			false => ProgressBar::hidden()
+		};
 		spinner.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
 		spinner.enable_steady_tick(std::time::Duration::from_millis(100));
+
 		Encrypt::new_uncompressed(s, &password, &mut OsRng, f_in_len)
 	}).await.unwrap().unwrap();
 
@@ -59,7 +63,10 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		}
 	};
 
-	let progress = ProgressBar::new(enc.total_output_len());
+	let progress = match B::is_interactive() {
+		true => ProgressBar::new(enc.total_output_len()),
+		false => ProgressBar::hidden()
+	};
 	progress.set_style(ProgressStyle::with_template(BAR_STYLE).unwrap());
 
 	while let Some(bytes) = enc.next().await {

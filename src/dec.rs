@@ -15,14 +15,18 @@ const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
 async fn dec_stream_to<E: std::error::Error, S: Stream<Item = Result<bytes::Bytes, E>> + Unpin>(
 	stream: S,
 	password: Zeroizing<Vec<u8>>,
-	out_path: PathBuf
+	out_path: PathBuf,
+	is_interactive: bool
 ) -> Result<(), ()> {
 	let mut dec = Decrypt::new(stream, password);
 
 	let mut f_out = new_async_tempfile().await.unwrap();
 
 	let mut total = None;
-	let progress = ProgressBar::new_spinner();
+	let progress = match is_interactive {
+		true => ProgressBar::new_spinner(),
+		false => ProgressBar::hidden()
+	};
 	progress.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
 	progress.enable_steady_tick(std::time::Duration::from_millis(100));
 
@@ -72,7 +76,7 @@ pub async fn dec_file<B: IoBundle>(args: DecArgs, io: B) -> Result<(), ()> {
 	})?;
 	let s = tokio_util::io::ReaderStream::new(f_in);
 
-	dec_stream_to(s, password, args.out_file).await
+	dec_stream_to(s, password, args.out_file, B::is_interactive()).await
 }
 
 pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
@@ -86,5 +90,5 @@ pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
 		eprintln!("failed to fetch remote file {:?}: {e}", args.url);
 	})?.bytes_stream();
 
-	dec_stream_to(s, password, args.out_file).await
+	dec_stream_to(s, password, args.out_file, B::is_interactive()).await
 }

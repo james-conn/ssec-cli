@@ -1,6 +1,7 @@
 pub mod cli;
 
 mod file;
+mod io;
 mod password;
 mod enc;
 mod dec;
@@ -18,42 +19,14 @@ fn handle_err(result: Result<(), ()>) -> std::process::ExitCode {
 	}
 }
 
-trait GetBufRead: Send + 'static {
-	fn get_bufread(&self) -> impl std::io::BufRead;
-
-	// the `rpassword` crate won't hide input if a custom `BufRead` is passed in
-	#[inline]
-	fn is_stdin() -> bool {
-		false
-	}
-}
-
-impl GetBufRead for std::io::Stdin {
-	fn get_bufread(&self) -> impl std::io::BufRead {
-		self.lock()
-	}
-
-	fn is_stdin() -> bool {
-		true
-	}
-}
-
-async fn run_with_io(
-	cli: cli::Cli,
-	reader: impl GetBufRead,
-	writer: impl std::io::Write + Send + 'static
-) -> std::process::ExitCode {
+async fn run_with_io<B: io::IoBundle>(cli: cli::Cli, io: B) -> std::process::ExitCode {
 	match cli.command {
-		cli::Command::Enc(args) => handle_err(enc::enc(args, reader, writer).await),
-		cli::Command::Dec(args) => handle_err(dec::dec_file(args, reader, writer).await),
-		cli::Command::Fetch(args) => handle_err(dec::dec_fetch(args, reader, writer).await)
+		cli::Command::Enc(args) => handle_err(enc::enc(args, io).await),
+		cli::Command::Dec(args) => handle_err(dec::dec_file(args, io).await),
+		cli::Command::Fetch(args) => handle_err(dec::dec_fetch(args, io).await)
 	}
 }
 
 pub async fn run(cli: cli::Cli) -> std::process::ExitCode {
-	run_with_io(
-		cli,
-		std::io::stdin(),
-		std::io::stdout()
-	).await
+	run_with_io(cli, io::InteractiveIo).await
 }

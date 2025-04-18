@@ -5,16 +5,13 @@ use rand::rngs::OsRng;
 use indicatif::{ProgressBar, ProgressStyle};
 use crate::cli::EncArgs;
 use crate::password::prompt_password;
-use crate::{BAR_STYLE, GetBufRead};
+use crate::io::IoBundle;
+use crate::BAR_STYLE;
 
 const SPINNER_STYLE: &str = "{spinner} deriving encryption key";
 
-pub async fn enc(
-	args: EncArgs,
-	reader: impl GetBufRead,
-	writer: impl std::io::Write + Send + 'static
-) -> Result<(), ()> {
-	let password = prompt_password(reader, writer).await.map_err(|e| {
+pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
+	let password = prompt_password(io).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
 	})?;
 

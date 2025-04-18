@@ -7,7 +7,8 @@ use std::path::PathBuf;
 use crate::cli::{DecArgs, FetchArgs};
 use crate::file::new_async_tempfile;
 use crate::password::prompt_password;
-use crate::{BAR_STYLE, GetBufRead};
+use crate::io::IoBundle;
+use crate::BAR_STYLE;
 
 const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
 
@@ -61,12 +62,8 @@ async fn dec_stream_to<E: std::error::Error, S: Stream<Item = Result<bytes::Byte
 	Ok(())
 }
 
-pub async fn dec_file(
-	args: DecArgs,
-	reader: impl GetBufRead,
-	writer: impl std::io::Write + Send + 'static
-) -> Result<(), ()> {
-	let password = prompt_password(reader, writer).await.map_err(|e| {
+pub async fn dec_file<B: IoBundle>(args: DecArgs, io: B) -> Result<(), ()> {
+	let password = prompt_password(io).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
 	})?;
 
@@ -78,12 +75,8 @@ pub async fn dec_file(
 	dec_stream_to(s, password, args.out_file).await
 }
 
-pub async fn dec_fetch(
-	args: FetchArgs,
-	reader: impl GetBufRead,
-	writer: impl std::io::Write + Send + 'static
-) -> Result<(), ()> {
-	let password = prompt_password(reader, writer).await.map_err(|e| {
+pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
+	let password = prompt_password(io).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
 	})?;
 

@@ -1,13 +1,22 @@
 use rand::{SeedableRng, TryRngCore};
-use crate::{GetBufRead, cli::{Cli, Command, EncArgs, DecArgs}, run_with_io};
+use crate::cli::{Cli, Command, EncArgs, DecArgs};
+use crate::io::IoBundle;
+use crate::run_with_io;
 
 const RNG_SEED: u64 = 12345678;
 
-struct MockStdin(String);
+struct MockStdin(&'static str);
 
-impl GetBufRead for MockStdin {
-	fn get_bufread(&self) -> impl std::io::BufRead {
+impl IoBundle for MockStdin {
+	type IoRead = &'static [u8];
+	type IoWrite = std::io::Sink;
+
+	fn get_bufread(&self) -> Self::IoRead {
 		self.0.as_bytes()
+	}
+
+	fn get_write(&self) -> Self::IoWrite {
+		std::io::sink()
 	}
 }
 
@@ -30,8 +39,7 @@ async fn end_to_end() {
 				out_file: Some(out_path.clone())
 			})
 		},
-		MockStdin(String::from("hunter2\n")),
-		std::io::sink()
+		MockStdin("hunter2\n")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::SUCCESS);
@@ -43,8 +51,7 @@ async fn end_to_end() {
 				out_file: dec_path.clone()
 			})
 		},
-		MockStdin(String::from("hunter2\n")),
-		std::io::sink()
+		MockStdin("hunter2\n")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::SUCCESS);
@@ -60,8 +67,7 @@ async fn end_to_end() {
 				out_file: dec_path
 			})
 		},
-		MockStdin(String::from("not_hunter2\n")),
-		std::io::sink()
+		MockStdin("not_hunter2\n")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::FAILURE);

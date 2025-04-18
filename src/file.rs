@@ -2,9 +2,6 @@ use tempfile::{Builder, TempPath, TempDir, PathPersistError};
 use tokio::fs::File;
 use tokio::io::BufWriter;
 
-#[cfg(not(unix))]
-compile_error!("currently unimplemented for non-unix platforms");
-
 // async drop isn't stable yet, but this will suffice for now
 pub struct TempTokioFile {
 	file: BufWriter<File>,
@@ -32,15 +29,23 @@ impl TempTokioFile {
 }
 
 #[cfg(unix)]
-pub async fn new_async_tempfile() -> Result<TempTokioFile, std::io::Error> {
+fn new_tempdir() -> Result<TempDir, std::io::Error> {
 	use std::fs::Permissions;
 	use std::os::unix::fs::PermissionsExt;
 
-	let tempdir = tokio::task::spawn_blocking(|| {
-		Builder::new()
-			.permissions(Permissions::from_mode(0o744))
-			.tempdir()
-	}).await.unwrap()?;
+	Builder::new()
+		.permissions(Permissions::from_mode(0o744))
+		.tempdir()
+}
+
+// let's just assume all non-UNIX operating systems will handle this securely
+#[cfg(not(unix))]
+fn new_tempdir() -> Result<TempDir, std::io::Error> {
+	Builder::new().tempdir()
+}
+
+pub async fn new_async_tempfile() -> Result<TempTokioFile, std::io::Error> {
+	let tempdir = tokio::task::spawn_blocking(new_tempdir).await.unwrap()?;
 
 	let temppath = TempPath::from_path(tempdir.as_ref().join("ssec-temp"));
 

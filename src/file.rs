@@ -34,7 +34,7 @@ fn new_tempdir() -> Result<TempDir, std::io::Error> {
 	use std::os::unix::fs::PermissionsExt;
 
 	Builder::new()
-		.permissions(Permissions::from_mode(0o744))
+		.permissions(Permissions::from_mode(0o700))
 		.tempdir()
 }
 

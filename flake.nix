@@ -15,19 +15,23 @@
 				pname = "ssec";
 				src = craneLib.cleanCargoSource ./.;
 
+				nativeBuildInputs = [ pkgs.installShellFiles ];
+
 				SHELLS_OUTPUT = "share/completions";
 
-				preBuildPhases = [ "mkCompletions" ];
-				mkCompletions = "mkdir -p $out/share/completions";
+				preBuildPhases = [ "mkCompletionsDir" ];
+				mkCompletionsDir = "mkdir -p $out/share/completions";
 
-				preInstallPhases = [ "linkBashCompletions" ];
+				preInstallPhases = [ "installShellCompletions" ];
 				# this runs both where we would expect but also in crane's inner derivation where our
 				# `build.rs` is not run, the if test is a scuffed way of ensuring this won't run in
 				# crane's inner derivation where `build.rs` isn't run
-				linkBashCompletions = ''
+				installShellCompletions = ''
 					if [ -f $out/share/completions/ssec.bash ]; then
-						mkdir -p $out/share/bash-completion/completions
-						ln -s $out/share/completions/ssec.bash $out/share/bash-completion/completions/ssec
+						installShellCompletion\
+							--bash $out/share/completions/ssec.bash\
+							--zsh $out/share/completions/_ssec\
+							--fish $out/share/completions/ssec.fish
 					fi
 				'';
 			}; in {

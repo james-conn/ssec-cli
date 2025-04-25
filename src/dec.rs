@@ -1,4 +1,4 @@
-use ssec_core::decrypt::{Decrypt, DecryptionError};
+use ssec_core::Decrypt;
 use futures_util::{Stream, StreamExt};
 use tokio::io::AsyncWriteExt;
 use zeroize::Zeroizing;
@@ -12,44 +12,54 @@ use crate::BAR_STYLE;
 
 const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
 
-async fn dec_stream_to<E: std::error::Error, S: Stream<Item = Result<bytes::Bytes, E>> + Unpin>(
+async fn dec_stream_to<E, S>(
 	stream: S,
 	password: Zeroizing<Vec<u8>>,
 	out_path: PathBuf,
 	is_interactive: bool
-) -> Result<(), ()> {
-	let mut dec = Decrypt::new(stream, password);
+) -> Result<(), ()>
+where
+	E: std::error::Error,
+	S: Stream<Item = Result<bytes::Bytes, E>> + Unpin + Send + 'static
+{
+	let (dec, f_out) = tokio::join!(
+		async {
+			let dec = Decrypt::new(stream).await.unwrap();
+			tokio::task::spawn_blocking(move || {
+				let spinner = match is_interactive {
+					true => ProgressBar::new_spinner(),
+					false => ProgressBar::hidden()
+				};
+				spinner.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
+				spinner.enable_steady_tick(std::time::Duration::from_millis(100));
 
-	let mut f_out = new_async_tempfile().await.unwrap();
+				dec.try_password(&password)
+			}).await.unwrap()
+		},
+		new_async_tempfile()
+	);
 
-	let mut total = None;
+	let mut dec = match dec {
+		Ok(dec) => dec,
+		Err(_) => {
+			eprintln!("password incorrect");
+			return Err(());
+		}
+	};
+	let mut f_out = f_out.unwrap();
+
+	let total = dec.remaining_read_len();
 	let progress = match is_interactive {
-		true => ProgressBar::new_spinner(),
+		true => ProgressBar::new(total),
 		false => ProgressBar::hidden()
 	};
-	progress.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
-	progress.enable_steady_tick(std::time::Duration::from_millis(100));
+	progress.set_style(ProgressStyle::with_template(BAR_STYLE).unwrap());
 
 	while let Some(bytes) = dec.next().await {
-		if let Some(remaining) = dec.remaining_read_len() {
-			match total {
-				Some(total) => progress.set_position(total - remaining),
-				None => {
-					progress.disable_steady_tick();
-					progress.set_style(ProgressStyle::with_template(BAR_STYLE).unwrap());
-					progress.set_length(remaining);
-					progress.reset();
-					total = Some(remaining);
-				}
-			}
-		}
+		progress.set_position(total - dec.remaining_read_len());
 
 		let b = match bytes {
 			Ok(b) => b,
-			Err(DecryptionError::PasswordIncorrect) => {
-				eprintln!("password incorrect");
-				return Err(());
-			}
 			Err(e) => {
 				eprintln!("{e}");
 				return Err(());

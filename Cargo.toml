@@ -67,5 +67,8 @@ version = "0.9"
 default-features = false
 features = [ "small_rng" ]
 
+[dev-dependencies]
+wiremock = "0.6"
+
 [profile.test]
 opt-level = 1

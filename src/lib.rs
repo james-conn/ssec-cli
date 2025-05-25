@@ -9,7 +9,8 @@ mod dec;
 #[cfg(test)]
 mod tests;
 
-const BAR_STYLE: &str = "[{elapsed_precise}] {binary_bytes_per_sec} {bar} {binary_bytes}/{binary_total_bytes} ({eta})";
+const DEFINITE_BAR_STYLE: &str = "[{elapsed_precise}] {binary_bytes_per_sec} {bar} {binary_bytes}/{binary_total_bytes} ({eta})";
+const INDEFINITE_BAR_STYLE: &str = "[{elapsed_precise}] {binary_bytes_per_sec} ({eta})";
 
 #[inline]
 fn handle_err(result: Result<(), ()>) -> std::process::ExitCode {

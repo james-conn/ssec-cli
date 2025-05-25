@@ -8,7 +8,7 @@ use crate::cli::{DecArgs, FetchArgs};
 use crate::file::new_async_tempfile;
 use crate::password::prompt_password;
 use crate::io::IoBundle;
-use crate::BAR_STYLE;
+use crate::{DEFINITE_BAR_STYLE, INDEFINITE_BAR_STYLE};
 
 const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
 
@@ -16,24 +16,38 @@ async fn dec_stream_to<E, S>(
 	stream: S,
 	password: Zeroizing<Vec<u8>>,
 	out_path: PathBuf,
-	is_interactive: bool
+	is_interactive: bool,
+	enc_len: Option<u64>
 ) -> Result<(), ()>
 where
 	E: std::error::Error,
 	S: Stream<Item = Result<bytes::Bytes, E>> + Unpin + Send + 'static
 {
+	let progress = match is_interactive {
+		true => ProgressBar::new_spinner(),
+		false => ProgressBar::hidden()
+	};
+	let stream = stream.map({
+		let progress = progress.clone();
+		move |b| {
+			if let Ok(b) = &b {
+				progress.inc(b.len() as u64);
+			}
+			b
+		}
+	});
+
 	let (dec, f_out) = tokio::join!(
 		async {
 			let dec = Decrypt::new(stream).await.unwrap();
-			tokio::task::spawn_blocking(move || {
-				let spinner = match is_interactive {
-					true => ProgressBar::new_spinner(),
-					false => ProgressBar::hidden()
-				};
-				spinner.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
-				spinner.enable_steady_tick(std::time::Duration::from_millis(100));
+			tokio::task::spawn_blocking({
+				let progress = progress.clone();
+				move || {
+					progress.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
+					progress.enable_steady_tick(std::time::Duration::from_millis(100));
 
-				dec.try_password(&password)
+					dec.try_password(&password)
+				}
 			}).await.unwrap()
 		},
 		new_async_tempfile()
@@ -42,26 +56,31 @@ where
 	let mut dec = match dec {
 		Ok(dec) => dec,
 		Err(_) => {
-			eprintln!("password incorrect");
+			progress.suspend(|| {
+				eprintln!("password incorrect");
+			});
 			return Err(());
 		}
 	};
 	let mut f_out = f_out.unwrap();
 
-	let total = dec.remaining_read_len();
-	let progress = match is_interactive {
-		true => ProgressBar::new(total),
-		false => ProgressBar::hidden()
-	};
-	progress.set_style(ProgressStyle::with_template(BAR_STYLE).unwrap());
+	progress.disable_steady_tick();
+	match enc_len {
+		Some(enc_len) => {
+			progress.set_length(enc_len);
+			progress.set_style(ProgressStyle::with_template(DEFINITE_BAR_STYLE).unwrap());
+		},
+		None => progress.set_style(ProgressStyle::with_template(INDEFINITE_BAR_STYLE).unwrap())
+	}
+	progress.reset();
 
 	while let Some(bytes) = dec.next().await {
-		progress.set_position(total - dec.remaining_read_len());
-
 		let b = match bytes {
 			Ok(b) => b,
 			Err(e) => {
-				eprintln!("{e}");
+				progress.suspend(|| {
+					eprintln!("{e}");
+				});
 				return Err(());
 			},
 		};
@@ -84,9 +103,20 @@ pub async fn dec_file<B: IoBundle>(args: DecArgs, io: B) -> Result<(), ()> {
 	let f_in = tokio::fs::File::open(&args.in_file).await.map_err(|e| {
 		eprintln!("failed to open file {:?}: {e}", args.in_file);
 	})?;
+
+	let f_in_metadata = f_in.metadata().await.map_err(|e| {
+		eprintln!("failed to get metadata of input file: {e}");
+	})?;
+
 	let s = tokio_util::io::ReaderStream::new(f_in);
 
-	dec_stream_to(s, password, args.out_file, B::is_interactive()).await
+	dec_stream_to(
+		s,
+		password,
+		args.out_file,
+		B::is_interactive(),
+		Some(f_in_metadata.len())
+	).await
 }
 
 pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
@@ -96,9 +126,17 @@ pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
 
 	let client = reqwest::Client::new();
 
-	let s = client.get(args.url.clone()).send().await.map_err(|e| {
+	let resp = client.get(args.url.clone()).send().await.map_err(|e| {
 		eprintln!("failed to fetch remote file {:?}: {e}", args.url);
-	})?.bytes_stream();
+	})?;
+	let enc_len = resp.content_length();
+	let s = resp.bytes_stream();
 
-	dec_stream_to(s, password, args.out_file, B::is_interactive()).await
+	dec_stream_to(
+		s,
+		password,
+		args.out_file,
+		B::is_interactive(),
+		enc_len
+	).await
 }

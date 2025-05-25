@@ -6,7 +6,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use crate::cli::EncArgs;
 use crate::password::prompt_password;
 use crate::io::IoBundle;
-use crate::BAR_STYLE;
+use crate::DEFINITE_BAR_STYLE;
 
 const SPINNER_STYLE: &str = "{spinner} deriving encryption key";
 
@@ -33,7 +33,12 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		return Ok(());
 	}
 
-	let s = tokio_util::io::ReaderStream::new(f_in);
+	let progress = match B::is_interactive() {
+		true => ProgressBar::new(f_in_len),
+		false => ProgressBar::hidden()
+	};
+	let progress_read = progress.wrap_async_read(f_in);
+	let s = tokio_util::io::ReaderStream::new(progress_read);
 	let mut enc = tokio::task::spawn_blocking(move || {
 		let spinner = match B::is_interactive() {
 			true => ProgressBar::new_spinner(),
@@ -42,7 +47,7 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		spinner.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
 		spinner.enable_steady_tick(std::time::Duration::from_millis(100));
 
-		Encrypt::new_uncompressed(s, &password, &mut OsRng, f_in_len)
+		Encrypt::new_uncompressed(s, &password, &mut OsRng)
 	}).await.unwrap().unwrap();
 
 	let mut f_out = match args.out_file {
@@ -63,15 +68,11 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		}
 	};
 
-	let progress = match B::is_interactive() {
-		true => ProgressBar::new(enc.total_output_len()),
-		false => ProgressBar::hidden()
-	};
-	progress.set_style(ProgressStyle::with_template(BAR_STYLE).unwrap());
+	progress.set_style(ProgressStyle::with_template(DEFINITE_BAR_STYLE).unwrap());
+	progress.reset();
 
 	while let Some(bytes) = enc.next().await {
 		let b = bytes.unwrap();
-		progress.inc(b.len() as u64);
 		f_out.write_all(&b).await.unwrap();
 	}
 

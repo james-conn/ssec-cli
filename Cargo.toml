@@ -1,6 +1,6 @@
 [package]
 name = "ssec-cli"
-version = "0.3.2"
+version = "0.4.0-rc.1"
 edition = "2024"
 description = "command-line interface for reading and writing the SSEC file format"
 categories = [ "command-line-utilities", "security" ]
@@ -44,9 +44,12 @@ version = "0.12"
 default-features = false
 features = [ "rustls-tls", "stream" ]
 
+[dependencies.indicatif]
+version = "0.17"
+features = [ "tokio" ]
+
 [dependencies]
-indicatif = "0.17"
-ssec-core = "0.4"
+ssec-core = "=0.5.0-rc.3"
 futures-util = "0.3"
 zeroize = "1.8"
 rpassword = "7.4"

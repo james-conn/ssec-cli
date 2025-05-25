@@ -37,7 +37,8 @@ async fn end_to_end_file() {
 		Cli {
 			command: Command::Enc(EncArgs {
 				in_file: in_path,
-				out_file: Some(enc_path.clone())
+				out_file: Some(enc_path.clone()),
+				silent: true
 			})
 		},
 		MockStdin("hunter2\n")
@@ -49,7 +50,8 @@ async fn end_to_end_file() {
 		Cli {
 			command: Command::Dec(DecArgs {
 				in_file: enc_path.clone(),
-				out_file: dec_path.clone()
+				out_file: dec_path.clone(),
+				silent: true
 			})
 		},
 		MockStdin("hunter2\n")
@@ -65,7 +67,8 @@ async fn end_to_end_file() {
 		Cli {
 			command: Command::Dec(DecArgs {
 				in_file: enc_path,
-				out_file: dec_path.clone()
+				out_file: dec_path.clone(),
+				silent: true
 			})
 		},
 		MockStdin("not_hunter2\n")
@@ -93,7 +96,8 @@ async fn end_to_end_fetch() {
 		Cli {
 			command: Command::Enc(EncArgs {
 				in_file: in_path,
-				out_file: Some(enc_path.clone())
+				out_file: Some(enc_path.clone()),
+				silent: true
 			})
 		},
 		MockStdin("hunter2\n")
@@ -116,7 +120,8 @@ async fn end_to_end_fetch() {
 		Cli {
 			command: Command::Fetch(FetchArgs {
 				url: enc_url.clone(),
-				out_file: dec_path.clone()
+				out_file: dec_path.clone(),
+				silent: true
 			})
 		},
 		MockStdin("hunter2\n")
@@ -132,7 +137,8 @@ async fn end_to_end_fetch() {
 		Cli {
 			command: Command::Fetch(FetchArgs {
 				url: enc_url,
-				out_file: dec_path.clone()
+				out_file: dec_path.clone(),
+				silent: true
 			})
 		},
 		MockStdin("not_hunter2\n")

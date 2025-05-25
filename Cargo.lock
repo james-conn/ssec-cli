@@ -1434,9 +1434,9 @@ dependencies = [
 
 [[package]]
 name = "ssec-core"
-version = "0.5.0-rc.3"
+version = "0.5.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c01c465770cc27af88b23aab3d9ea6dca55e0b5f598068ccb36b98bc75926bf8"
+checksum = "219e677f1cc7369c13b40e1f9c0bbf195f7e4ec69b0204607fd0d62ada8ac037"
 dependencies = [
  "aes",
  "argon2",

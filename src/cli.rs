@@ -20,7 +20,10 @@ pub struct EncArgs {
 	pub in_file: std::path::PathBuf,
 
 	#[arg(value_hint = clap::ValueHint::FilePath)]
-	pub out_file: Option<std::path::PathBuf>
+	pub out_file: Option<std::path::PathBuf>,
+
+	#[arg(long)]
+	pub silent: bool
 }
 
 #[derive(Args)]
@@ -29,7 +32,10 @@ pub struct DecArgs {
 	pub in_file: std::path::PathBuf,
 
 	#[arg(value_hint = clap::ValueHint::FilePath)]
-	pub out_file: std::path::PathBuf
+	pub out_file: std::path::PathBuf,
+
+	#[arg(long)]
+	pub silent: bool
 }
 
 #[derive(Args)]
@@ -37,5 +43,8 @@ pub struct FetchArgs {
 	pub url: url::Url,
 
 	#[arg(value_hint = clap::ValueHint::FilePath)]
-	pub out_file: std::path::PathBuf
+	pub out_file: std::path::PathBuf,
+
+	#[arg(long)]
+	pub silent: bool
 }

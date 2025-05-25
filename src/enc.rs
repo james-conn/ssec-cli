@@ -33,14 +33,14 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		return Ok(());
 	}
 
-	let progress = match B::is_interactive() {
+	let progress = match B::is_interactive() && !args.silent {
 		true => ProgressBar::new(f_in_len),
 		false => ProgressBar::hidden()
 	};
 	let progress_read = progress.wrap_async_read(f_in);
 	let s = tokio_util::io::ReaderStream::new(progress_read);
 	let mut enc = tokio::task::spawn_blocking(move || {
-		let spinner = match B::is_interactive() {
+		let spinner = match B::is_interactive() && !args.silent {
 			true => ProgressBar::new_spinner(),
 			false => ProgressBar::hidden()
 		};

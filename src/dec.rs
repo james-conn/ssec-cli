@@ -16,14 +16,14 @@ async fn dec_stream_to<E, S>(
 	stream: S,
 	password: Zeroizing<Vec<u8>>,
 	out_path: PathBuf,
-	is_interactive: bool,
+	show_progress: bool,
 	enc_len: Option<u64>
 ) -> Result<(), ()>
 where
 	E: std::error::Error,
 	S: Stream<Item = Result<bytes::Bytes, E>> + Unpin + Send + 'static
 {
-	let progress = match is_interactive {
+	let progress = match show_progress {
 		true => ProgressBar::new_spinner(),
 		false => ProgressBar::hidden()
 	};
@@ -114,7 +114,7 @@ pub async fn dec_file<B: IoBundle>(args: DecArgs, io: B) -> Result<(), ()> {
 		s,
 		password,
 		args.out_file,
-		B::is_interactive(),
+		B::is_interactive() && !args.silent,
 		Some(f_in_metadata.len())
 	).await
 }
@@ -136,7 +136,7 @@ pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
 		s,
 		password,
 		args.out_file,
-		B::is_interactive(),
+		B::is_interactive() && !args.silent,
 		enc_len
 	).await
 }

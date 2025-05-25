@@ -19,7 +19,7 @@ pub struct EncArgs {
 	#[arg(value_hint = clap::ValueHint::FilePath)]
 	pub in_file: std::path::PathBuf,
 
-	#[arg(short, value_hint = clap::ValueHint::FilePath)]
+	#[arg(value_hint = clap::ValueHint::FilePath)]
 	pub out_file: Option<std::path::PathBuf>
 }
 

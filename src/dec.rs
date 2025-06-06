@@ -12,6 +12,15 @@ use crate::{DEFINITE_BAR_STYLE, INDEFINITE_BAR_STYLE};
 
 const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
 
+macro_rules! bail {
+	($p:ident, $m:literal) => {
+		$p.suspend(|| {
+			eprintln!($m);
+		});
+		return Err(());
+	}
+}
+
 async fn dec_stream_to<E, S>(
 	stream: S,
 	password: Zeroizing<Vec<u8>>,
@@ -56,40 +65,22 @@ where
 	let mut dec = match dec {
 		Ok(Ok(dec)) => dec,
 		Ok(Err(_)) => {
-			progress.suspend(|| {
-				eprintln!("password incorrect");
-			});
-			return Err(());
-		}
+			bail!(progress, "password incorrect");
+		},
 		Err(SsecHeaderError::NotSsec) => {
-			progress.suspend(|| {
-				eprintln!("input is not a SSEC file");
-			});
-			return Err(());
+			bail!(progress, "input is not a SSEC file");
 		},
 		Err(SsecHeaderError::UnsupportedVersion(0)) => {
-			progress.suspend(|| {
-				eprintln!("input is from an old version of SSEC, consider downgrading to `ssec-cli` version 0.3");
-			});
-			return Err(());
+			bail!(progress, "input is from an old version of SSEC, consider downgrading to `ssec-cli` version 0.3");
 		},
 		Err(SsecHeaderError::UnsupportedVersion(v)) => {
-			progress.suspend(|| {
-				eprintln!("input is from a future version of SSEC (version {v:?}), consider updating `ssec-cli` to the latest version");
-			});
-			return Err(());
+			bail!(progress, "input is from a future version of SSEC (version {v:?}), consider updating `ssec-cli` to the latest version");
 		},
 		Err(SsecHeaderError::UnsupportedCompression(c)) => {
-			progress.suspend(|| {
-				eprintln!("input has unimplemented compression (type {c:?}), consider updating `ssec-cli` to the latest version");
-			});
-			return Err(());
+			bail!(progress, "input has unimplemented compression (type {c:?}), consider updating `ssec-cli` to the latest version");
 		},
 		Err(SsecHeaderError::Stream(e)) => {
-			progress.suspend(|| {
-				eprintln!("input stream failed: {e}");
-			});
-			return Err(());
+			bail!(progress, "input stream failed: {e}");
 		}
 	};
 	let mut f_out = f_out.unwrap();
@@ -108,10 +99,7 @@ where
 		let b = match bytes {
 			Ok(b) => b,
 			Err(e) => {
-				progress.suspend(|| {
-					eprintln!("{e}");
-				});
-				return Err(());
+				bail!(progress, "{e}");
 			},
 		};
 

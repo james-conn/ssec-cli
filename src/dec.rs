@@ -1,4 +1,4 @@
-use ssec_core::Decrypt;
+use ssec_core::decrypt::{Decrypt, SsecHeaderError};
 use futures_util::{Stream, StreamExt};
 use tokio::io::AsyncWriteExt;
 use zeroize::Zeroizing;
@@ -39,8 +39,8 @@ where
 
 	let (dec, f_out) = tokio::join!(
 		async {
-			let dec = Decrypt::new(stream).await.unwrap();
-			tokio::task::spawn_blocking({
+			let dec = Decrypt::new(stream).await?;
+			Ok::<_, SsecHeaderError<E>>(tokio::task::spawn_blocking({
 				let progress = progress.clone();
 				move || {
 					progress.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
@@ -48,16 +48,46 @@ where
 
 					dec.try_password(&password)
 				}
-			}).await.unwrap()
+			}).await.unwrap())
 		},
 		new_async_tempfile()
 	);
 
 	let mut dec = match dec {
-		Ok(dec) => dec,
-		Err(_) => {
+		Ok(Ok(dec)) => dec,
+		Ok(Err(_)) => {
 			progress.suspend(|| {
 				eprintln!("password incorrect");
+			});
+			return Err(());
+		}
+		Err(SsecHeaderError::NotSsec) => {
+			progress.suspend(|| {
+				eprintln!("input is not a SSEC file");
+			});
+			return Err(());
+		},
+		Err(SsecHeaderError::UnsupportedVersion(0)) => {
+			progress.suspend(|| {
+				eprintln!("input is from an old version of SSEC, consider downgrading to `ssec-cli` version 0.3");
+			});
+			return Err(());
+		},
+		Err(SsecHeaderError::UnsupportedVersion(v)) => {
+			progress.suspend(|| {
+				eprintln!("input is from a future version of SSEC (version {v:?}), consider updating `ssec-cli` to the latest version");
+			});
+			return Err(());
+		},
+		Err(SsecHeaderError::UnsupportedCompression(c)) => {
+			progress.suspend(|| {
+				eprintln!("input has unimplemented compression (type {c:?}), consider updating `ssec-cli` to the latest version");
+			});
+			return Err(());
+		},
+		Err(SsecHeaderError::Stream(e)) => {
+			progress.suspend(|| {
+				eprintln!("input stream failed: {e}");
 			});
 			return Err(());
 		}

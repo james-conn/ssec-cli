@@ -1419,9 +1419,9 @@ dependencies = [
 
 [[package]]
 name = "ssec-core"
-version = "0.5.2"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d781d34dc2eca01453d90e34292add4960950894fb9ccb490257d72e1ef36fea"
+checksum = "81f09c1dfed1a49c45c63b1022804e7900f2a135e07dc45e174a3af61e9fa99e"
 dependencies = [
  "aes",
  "argon2",
@@ -1433,7 +1433,6 @@ dependencies = [
  "pin-project-lite",
  "rand_core",
  "sha3",
- "thiserror",
  "zeroize",
 ]
 

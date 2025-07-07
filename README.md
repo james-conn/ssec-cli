@@ -40,7 +40,7 @@ ssec dec <IN_FILE> <OUT_FILE>
 You will be prompted to input the password for the file interactively.
 
 ### Decrypting A Remote File (`fetch`)
-If you have a URL to a SSEC file, you can directly download the decrypted inner contents without needing to save SSEC file itself:
+If you have a URL to a SSEC file, you can directly download the decrypted inner contents without needing to save the SSEC file itself:
 
 ```sh
 ssec fetch <URL> <OUT_FILE>

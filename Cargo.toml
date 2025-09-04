@@ -45,7 +45,7 @@ default-features = false
 features = [ "rustls-tls", "stream" ]
 
 [dependencies.indicatif]
-version = "0.17"
+version = "0.18"
 features = [ "tokio" ]
 
 [dependencies]
@@ -71,7 +71,9 @@ default-features = false
 features = [ "small_rng" ]
 
 [dev-dependencies]
-wiremock = "0.6"
+# pinning to 0.6.4, latest version uses Rust features not available on stable nixpkgs yet
+# this is only used during testing, so this shouldn't cause any issues at runtime
+wiremock = "=0.6.4"
 
 [profile.test]
 opt-level = 1

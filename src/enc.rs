@@ -57,7 +57,7 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 				.write(true)
 				.truncate(true)
 				.open(&out_file).await.map_err(|e| {
-					eprintln!("failed to open specified outout file {out_file:?}: {e}");
+					eprintln!("failed to open specified output file {out_file:?}: {e}");
 				}).map(tokio::io::BufWriter::new)?
 		},
 		None => {

@@ -55,10 +55,10 @@ pub struct ChaffArgs {
 	#[arg(value_hint = clap::ValueHint::FilePath)]
 	pub out_file: std::path::PathBuf,
 
-	#[arg(long)]
+	#[arg(long, value_hint = clap::ValueHint::Other)]
 	pub size: String,
 
-	#[arg(long, requires = "size")]
+	#[arg(long, requires = "size", value_hint = clap::ValueHint::Other)]
 	pub random_size_max: Option<String>,
 
 	#[arg(long)]

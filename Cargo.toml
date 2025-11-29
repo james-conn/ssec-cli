@@ -49,13 +49,14 @@ version = "0.18"
 features = [ "tokio" ]
 
 [dependencies]
-ssec-core = "0.6"
+ssec-core = "0.7"
 futures-util = "0.3"
 zeroize = "1.8"
 rpassword = "7.4"
 url = "2.5"
 tempfile = "3"
 bytes = "1"
+regex = "1"
 
 [build-dependencies.clap]
 version = "4.5"

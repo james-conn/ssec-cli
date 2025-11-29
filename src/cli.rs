@@ -11,7 +11,8 @@ pub struct Cli {
 pub enum Command {
 	Enc(EncArgs),
 	Dec(DecArgs),
-	Fetch(FetchArgs)
+	Fetch(FetchArgs),
+	Chaff(ChaffArgs)
 }
 
 #[derive(Args)]
@@ -44,6 +45,21 @@ pub struct FetchArgs {
 
 	#[arg(value_hint = clap::ValueHint::FilePath)]
 	pub out_file: std::path::PathBuf,
+
+	#[arg(long)]
+	pub silent: bool
+}
+
+#[derive(Args)]
+pub struct ChaffArgs {
+	#[arg(value_hint = clap::ValueHint::FilePath)]
+	pub out_file: std::path::PathBuf,
+
+	#[arg(long)]
+	pub size: String,
+
+	#[arg(long, requires = "size")]
+	pub random_size_max: Option<String>,
 
 	#[arg(long)]
 	pub silent: bool

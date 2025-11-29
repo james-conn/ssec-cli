@@ -7,6 +7,7 @@ mod io;
 mod password;
 mod enc;
 mod dec;
+mod chaff;
 
 #[cfg(test)]
 mod tests;
@@ -26,7 +27,8 @@ async fn run_with_io<B: io::IoBundle>(cli: cli::Cli, io: B) -> std::process::Exi
 	match cli.command {
 		cli::Command::Enc(args) => handle_err(enc::enc(args, io).await),
 		cli::Command::Dec(args) => handle_err(dec::dec_file(args, io).await),
-		cli::Command::Fetch(args) => handle_err(dec::dec_fetch(args, io).await)
+		cli::Command::Fetch(args) => handle_err(dec::dec_fetch(args, io).await),
+		cli::Command::Chaff(args) => handle_err(chaff::chaff(args).await),
 	}
 }
 

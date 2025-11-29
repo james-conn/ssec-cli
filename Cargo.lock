@@ -1367,6 +1367,7 @@ dependencies = [
  "futures-util",
  "indicatif",
  "rand",
+ "regex",
  "reqwest",
  "rpassword",
  "ssec-core",
@@ -1380,9 +1381,9 @@ dependencies = [
 
 [[package]]
 name = "ssec-core"
-version = "0.6.2"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67f7ef8f478ccabfdb2781603ca7c367a46e8c6233a628d096fbc0dbc026002e"
+checksum = "0bb0c826fab9af2c826c1e65b5ecf6e87738e6b372a642b4032cbfb636df8e7b"
 dependencies = [
  "aes",
  "argon2",

@@ -64,13 +64,11 @@ pub async fn chaff(args: ChaffArgs) -> Result<(), ()> {
 		}
 	});
 
-	// TODO: uncomment after bumping Rust version
-	//if let Some(max_size) = max_size && max_size <= min_size {
-	if max_size.is_some() && max_size.unwrap() <= min_size {
+	if let Some(max_size) = max_size && max_size <= min_size {
 		Cli::command()
 			.error(
 				clap::error::ErrorKind::ValueValidation,
-				format!("max size ({:?}) must be greater than min size ({min_size:?})", max_size.unwrap())
+				format!("max size ({max_size:?}) must be greater than min size ({min_size:?})")
 			).exit()
 	}
 

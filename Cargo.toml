@@ -72,9 +72,7 @@ default-features = false
 features = [ "small_rng" ]
 
 [dev-dependencies]
-# pinning to 0.6.4, latest version uses Rust features not available on stable nixpkgs yet
-# this is only used during testing, so this shouldn't cause any issues at runtime
-wiremock = "=0.6.4"
+wiremock = "0.6"
 
 [profile.test]
 opt-level = 1

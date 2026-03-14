@@ -17,6 +17,9 @@
 
 				nativeBuildInputs = [ pkgs.installShellFiles ];
 
+				# end-to-end tests need to be able to find CA certificates to initialize successfully
+				SSL_CERT_FILE="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+
 				SHELLS_OUTPUT = "share/completions";
 
 				preBuildPhases = [ "mkCompletionsDir" ];

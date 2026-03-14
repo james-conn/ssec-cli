@@ -47,7 +47,7 @@ fn new_tempdir() -> Result<TempDir, std::io::Error> {
 pub async fn new_async_tempfile() -> Result<TempTokioFile, std::io::Error> {
 	let tempdir = tokio::task::spawn_blocking(new_tempdir).await.unwrap()?;
 
-	let temppath = TempPath::from_path(tempdir.as_ref().join("ssec-temp"));
+	let temppath = TempPath::try_from_path(tempdir.as_ref().join("ssec-temp"))?;
 
 	let file = tokio::fs::OpenOptions::new()
 		.write(true)

@@ -35,9 +35,9 @@ version = "0.7"
 features = [ "io" ]
 
 [dependencies.rand]
-version = "0.9"
+version = "0.10"
 default-features = false
-features = [ "os_rng", "std_rng" ]
+features = [ "sys_rng", "std_rng" ]
 
 [dependencies.reqwest]
 version = "0.13"
@@ -48,20 +48,8 @@ features = [ "rustls", "stream" ]
 version = "0.18"
 features = [ "tokio" ]
 
-# TODO: remove pin
-[dependencies.digest]
-version = "=0.11.0-rc.4"
-
-# TODO: remove pin
-[dependencies.cipher]
-version = "=0.5.0-rc.2"
-
-# TODO: remove pin
-[dependencies.crypto-common]
-version = "=0.2.0-rc.5"
-
 [dependencies]
-ssec-core = "0.7"
+ssec-core = "0.8"
 futures-util = "0.3"
 zeroize = "1.8"
 rpassword = "7.4"
@@ -77,11 +65,6 @@ features = [ "derive" ]
 [build-dependencies]
 clap_complete = "4.5"
 url = "2.5"
-
-[dev-dependencies.rand]
-version = "0.9"
-default-features = false
-features = [ "small_rng" ]
 
 [dev-dependencies]
 wiremock = "0.6"

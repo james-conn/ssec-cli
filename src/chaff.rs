@@ -1,6 +1,7 @@
 use clap::CommandFactory;
 use regex::Regex;
-use rand::{TryRngCore, SeedableRng};
+use rand::{TryRng, SeedableRng};
+use rand::rngs::SysRng;
 use tokio::io::AsyncWriteExt;
 use futures_util::StreamExt;
 use ssec_core::ChaffStream;
@@ -74,7 +75,7 @@ pub async fn chaff(args: ChaffArgs) -> Result<(), ()> {
 
 	let size = match max_size {
 		Some(max_size) => {
-			let r = rand::rngs::OsRng.try_next_u64().unwrap();
+			let r = rand::rngs::SysRng.try_next_u64().unwrap();
 			// technically this isn't perfectly uniform, but probably good enough
 			min_size + (r % (max_size - min_size))
 		},
@@ -89,7 +90,7 @@ pub async fn chaff(args: ChaffArgs) -> Result<(), ()> {
 			eprintln!("failed to open specified outout file {:?}: {e}", args.out_file);
 		}).map(tokio::io::BufWriter::new)?;
 
-	let mut chaff = ChaffStream::new(rand::rngs::StdRng::from_os_rng(), size as usize, 2048).unwrap();
+	let mut chaff = ChaffStream::new(rand::rngs::StdRng::try_from_rng(&mut SysRng).unwrap(), size as usize, 2048).unwrap();
 
 	while let Some(bytes) = chaff.next().await {
 		let b = bytes.unwrap();

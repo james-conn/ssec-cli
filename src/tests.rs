@@ -1,4 +1,4 @@
-use rand::{SeedableRng, TryRngCore};
+use rand::{SeedableRng, TryRng};
 use wiremock::{MockServer, Mock, ResponseTemplate, matchers::method};
 use crate::cli::{Cli, Command, EncArgs, DecArgs, FetchArgs, ChaffArgs};
 use crate::io::IoBundle;

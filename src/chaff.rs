@@ -88,9 +88,9 @@ pub async fn chaff(args: ChaffArgs) -> Result<(), ()> {
 		.truncate(true)
 		.open(&args.out_file).await.map_err(|e| {
 			eprintln!("failed to open specified outout file {:?}: {e}", args.out_file);
-		}).map(tokio::io::BufWriter::new)?;
+		}).map(|f| tokio::io::BufWriter::with_capacity(f.max_buf_size(), f))?;
 
-	let mut chaff = ChaffStream::new(rand::rngs::StdRng::try_from_rng(&mut SysRng).unwrap(), size as usize, 2048).unwrap();
+	let mut chaff = ChaffStream::new(rand::rngs::StdRng::try_from_rng(&mut SysRng).unwrap(), size as usize, 8 * 1024).unwrap();
 
 	while let Some(bytes) = chaff.next().await {
 		let b = bytes.unwrap();

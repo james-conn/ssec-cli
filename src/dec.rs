@@ -126,7 +126,8 @@ pub async fn dec_file<B: IoBundle>(args: DecArgs, io: B) -> Result<(), ()> {
 		eprintln!("failed to get metadata of input file: {e}");
 	})?;
 
-	let s = tokio_util::io::ReaderStream::new(f_in);
+	let buf_size = f_in.max_buf_size();
+	let s = tokio_util::io::ReaderStream::with_capacity(f_in, buf_size);
 
 	dec_stream_to(
 		s,

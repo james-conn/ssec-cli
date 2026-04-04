@@ -37,8 +37,9 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		true => ProgressBar::new(f_in_len),
 		false => ProgressBar::hidden()
 	};
+	let buf_size = f_in.max_buf_size();
 	let progress_read = progress.wrap_async_read(f_in);
-	let s = tokio_util::io::ReaderStream::new(progress_read);
+	let s = tokio_util::io::ReaderStream::with_capacity(progress_read, buf_size);
 	let mut enc = tokio::task::spawn_blocking(move || {
 		let spinner = match B::is_interactive() && !args.silent {
 			true => ProgressBar::new_spinner(),
@@ -58,7 +59,7 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 				.truncate(true)
 				.open(&out_file).await.map_err(|e| {
 					eprintln!("failed to open specified output file {out_file:?}: {e}");
-				}).map(tokio::io::BufWriter::new)?
+				}).map(|f| tokio::io::BufWriter::with_capacity(f.max_buf_size(), f))?
 		},
 		None => {
 			let out_name = format!("{}.ssec", args.in_file.display());

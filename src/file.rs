@@ -54,7 +54,7 @@ pub async fn new_async_tempfile() -> Result<TempTokioFile, std::io::Error> {
 		.create(true)
 		.truncate(true)
 		.open(&*temppath).await
-		.map(BufWriter::new)?;
+		.map(|f| BufWriter::with_capacity(f.max_buf_size(), f))?;
 
 	Ok(TempTokioFile {
 		file,

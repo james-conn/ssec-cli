@@ -1,4 +1,4 @@
-use ssec_core::decrypt::{Decrypt, SsecHeaderError};
+use ssec_core::decrypt::{Decrypt, DecryptArgs, SsecHeaderError};
 use futures_util::{Stream, StreamExt};
 use tokio::io::AsyncWriteExt;
 use zeroize::Zeroizing;
@@ -48,7 +48,9 @@ where
 
 	let (dec, f_out) = tokio::join!(
 		async {
-			let dec = Decrypt::new(stream).await?;
+			let mut args = DecryptArgs::default();
+			args.set_bytes_per_poll(core::num::NonZeroUsize::new(1024).unwrap());
+			let dec = Decrypt::new(args, stream).await?;
 			Ok::<_, SsecHeaderError<E>>(tokio::task::spawn_blocking({
 				let progress = progress.clone();
 				move || {

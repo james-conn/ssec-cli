@@ -23,7 +23,7 @@ name = "ssec"
 path = "src/bin/ssec.rs"
 
 [dependencies.clap]
-version = "4.5"
+version = "4.6"
 features = [ "derive" ]
 
 [dependencies.tokio]
@@ -52,7 +52,7 @@ features = [ "tokio" ]
 ssec-core = "0.9"
 futures-util = "0.3"
 zeroize = "1.8"
-rpassword = "7.4"
+rpassword = "7.5"
 url = "2.5"
 tempfile = "3"
 bytes = "1"
@@ -63,7 +63,7 @@ version = "4.5"
 features = [ "derive" ]
 
 [build-dependencies]
-clap_complete = "4.5"
+clap_complete = "4.6"
 url = "2.5"
 
 [dev-dependencies]

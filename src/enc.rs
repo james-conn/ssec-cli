@@ -6,7 +6,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use crate::cli::EncArgs;
 use crate::password::prompt_password;
 use crate::io::IoBundle;
-use crate::DEFINITE_BAR_STYLE;
+use crate::{DEFINITE_BAR_STYLE, BYTES_PER_POLL};
 
 const SPINNER_STYLE: &str = "{spinner} deriving encryption key";
 
@@ -49,7 +49,7 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		spinner.enable_steady_tick(std::time::Duration::from_millis(100));
 
 		let mut args = EncryptArgs::default();
-		args.set_bytes_per_poll(core::num::NonZeroUsize::new(2048).unwrap());
+		args.set_bytes_per_poll(BYTES_PER_POLL);
 		Encrypt::new(args, &mut SysRng, &password, s)
 	}).await.unwrap().unwrap();
 

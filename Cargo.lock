@@ -1690,7 +1690,7 @@ dependencies = [
 [[package]]
 name = "ssec-core"
 version = "0.8.1"
-source = "git+https://github.com/james-conn/ssec-core.git?branch=variable_bytes_per_poll#890646b5ce4454bfae392580a54cb613fa9ffa90"
+source = "git+https://github.com/james-conn/ssec-core.git#3f0013e88906956d481e65aa4fe8ce9c4b9a3850"
 dependencies = [
  "aes",
  "argon2",

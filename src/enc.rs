@@ -1,4 +1,4 @@
-use ssec_core::Encrypt;
+use ssec_core::{Encrypt, EncryptArgs};
 use futures_util::StreamExt;
 use tokio::io::AsyncWriteExt;
 use rand::rngs::SysRng;
@@ -6,7 +6,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use crate::cli::EncArgs;
 use crate::password::prompt_password;
 use crate::io::IoBundle;
-use crate::DEFINITE_BAR_STYLE;
+use crate::{DEFINITE_BAR_STYLE, BYTES_PER_POLL};
 
 const SPINNER_STYLE: &str = "{spinner} deriving encryption key";
 
@@ -48,7 +48,9 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		spinner.set_style(ProgressStyle::with_template(SPINNER_STYLE).unwrap());
 		spinner.enable_steady_tick(std::time::Duration::from_millis(100));
 
-		Encrypt::new_uncompressed(s, &password, &mut SysRng)
+		let mut args = EncryptArgs::default();
+		args.set_bytes_per_poll(BYTES_PER_POLL);
+		Encrypt::new(args, &mut SysRng, &password, s)
 	}).await.unwrap().unwrap();
 
 	let mut f_out = match args.out_file {

@@ -4,7 +4,7 @@ use rand::{TryRng, SeedableRng};
 use rand::rngs::SysRng;
 use tokio::io::AsyncWriteExt;
 use futures_util::StreamExt;
-use ssec_core::ChaffStream;
+use ssec_core::{ChaffStream, ChaffStreamArgs};
 use std::str::FromStr;
 use crate::cli::{Cli, ChaffArgs};
 
@@ -90,7 +90,9 @@ pub async fn chaff(args: ChaffArgs) -> Result<(), ()> {
 			eprintln!("failed to open specified outout file {:?}: {e}", args.out_file);
 		}).map(|f| tokio::io::BufWriter::with_capacity(f.max_buf_size(), f))?;
 
-	let mut chaff = ChaffStream::new(rand::rngs::StdRng::try_from_rng(&mut SysRng).unwrap(), size as usize, 8 * 1024).unwrap();
+	let mut args = ChaffStreamArgs::with_length(size as usize);
+	args.set_chunk_size(8 * 1024).unwrap();
+	let mut chaff = ChaffStream::new(args, rand::rngs::StdRng::try_from_rng(&mut SysRng).unwrap());
 
 	while let Some(bytes) = chaff.next().await {
 		let b = bytes.unwrap();

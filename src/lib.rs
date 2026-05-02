@@ -15,6 +15,8 @@ mod tests;
 const DEFINITE_BAR_STYLE: &str = "[{elapsed_precise}] {binary_bytes_per_sec} {bar} {binary_bytes}/{binary_total_bytes} ({eta})";
 const INDEFINITE_BAR_STYLE: &str = "[{elapsed_precise}] {binary_bytes_per_sec} ({eta})";
 
+const BYTES_PER_POLL: core::num::NonZeroUsize = core::num::NonZeroUsize::new(2048).unwrap();
+
 #[inline]
 fn handle_err(result: Result<(), ()>) -> std::process::ExitCode {
 	match result {

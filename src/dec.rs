@@ -1,4 +1,4 @@
-use ssec_core::decrypt::{Decrypt, SsecHeaderError};
+use ssec_core::decrypt::{Decrypt, DecryptArgs, SsecHeaderError};
 use futures_util::{Stream, StreamExt};
 use tokio::io::AsyncWriteExt;
 use zeroize::Zeroizing;
@@ -8,7 +8,7 @@ use crate::cli::{DecArgs, FetchArgs};
 use crate::file::new_async_tempfile;
 use crate::password::prompt_password;
 use crate::io::IoBundle;
-use crate::{DEFINITE_BAR_STYLE, INDEFINITE_BAR_STYLE};
+use crate::{DEFINITE_BAR_STYLE, INDEFINITE_BAR_STYLE, BYTES_PER_POLL};
 
 const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
 
@@ -48,7 +48,9 @@ where
 
 	let (dec, f_out) = tokio::join!(
 		async {
-			let dec = Decrypt::new(stream).await?;
+			let mut args = DecryptArgs::default();
+			args.set_bytes_per_poll(BYTES_PER_POLL);
+			let dec = Decrypt::new(args, stream).await?;
 			Ok::<_, SsecHeaderError<E>>(tokio::task::spawn_blocking({
 				let progress = progress.clone();
 				move || {

@@ -1689,8 +1689,9 @@ dependencies = [
 
 [[package]]
 name = "ssec-core"
-version = "0.8.1"
-source = "git+https://github.com/james-conn/ssec-core.git#3f0013e88906956d481e65aa4fe8ce9c4b9a3850"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "713aa9aae93ae79f9acc0549dca3c3f77b344b19aad92c7e5c54cc744f246c68"
 dependencies = [
  "aes",
  "argon2",

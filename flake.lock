@@ -2,11 +2,11 @@
   "nodes": {
     "crane": {
       "locked": {
-        "lastModified": 1773189535,
-        "narHash": "sha256-E1G/Or6MWeP+L6mpQ0iTFLpzSzlpGrITfU2220Gq47g=",
+        "lastModified": 1780099841,
+        "narHash": "sha256-EVZd2RsbpreRUDSi9rBwPY+ZxoyMaiEBbZxxhljbaS4=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "6fa2fb4cf4a89ba49fc9dd5a3eb6cde99d388269",
+        "rev": "0532eb17955225173906d671fb36306bdeb1e2dc",
         "type": "github"
       },
       "original": {
@@ -35,16 +35,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1773504841,
-        "narHash": "sha256-1ecVM2bnsGmB5QC3czlAhf1BZXzfdiff0qZVqptnXvg=",
+        "lastModified": 1780278222,
+        "narHash": "sha256-MFkvA3tVzC4I7YYHsuxdPm7BQeIl5ICPUzo7sn2pnTs=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "839327cf11fcaf272168ed12093fb228f0a978ef",
+        "rev": "a91684e2816a8c50e919db0d2464a2f6a4478f18",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "release-25.11",
+        "ref": "release-26.05",
         "repo": "nixpkgs",
         "type": "github"
       }

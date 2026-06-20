@@ -1,40 +1,10 @@
 use rand::{SeedableRng, TryRng};
 use wiremock::{MockServer, Mock, ResponseTemplate, matchers::method};
 use crate::cli::{Cli, Command, EncArgs, DecArgs, FetchArgs, ChaffArgs};
-use crate::io::IoBundle;
+use crate::io::IoMode;
 use crate::run_with_io;
 
 const RNG_SEED: u64 = 12345678;
-
-struct MockStdin(&'static str);
-
-impl IoBundle for MockStdin {
-	type IoRead = &'static [u8];
-	type IoWrite = std::io::Sink;
-
-	fn get_bufread(&self) -> Self::IoRead {
-		self.0.as_bytes()
-	}
-
-	fn get_write(&self) -> Self::IoWrite {
-		std::io::sink()
-	}
-}
-
-struct EmptyMockStdin;
-
-impl IoBundle for EmptyMockStdin {
-	type IoRead = std::io::Empty;
-	type IoWrite = std::io::Sink;
-
-	fn get_bufread(&self) -> Self::IoRead {
-		std::io::empty()
-	}
-
-	fn get_write(&self) -> Self::IoWrite {
-		std::io::sink()
-	}
-}
 
 #[tokio::test]
 async fn end_to_end_file() {
@@ -56,7 +26,7 @@ async fn end_to_end_file() {
 				silent: true
 			})
 		},
-		MockStdin("hunter2\n")
+		IoMode::TestMockedInput(b"hunter2")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::SUCCESS);
@@ -69,7 +39,7 @@ async fn end_to_end_file() {
 				silent: true
 			})
 		},
-		MockStdin("hunter2\n")
+		IoMode::TestMockedInput(b"hunter2")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::SUCCESS);
@@ -86,7 +56,7 @@ async fn end_to_end_file() {
 				silent: true
 			})
 		},
-		MockStdin("not_hunter2\n")
+		IoMode::TestMockedInput(b"not_hunter2")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::FAILURE);
@@ -115,7 +85,7 @@ async fn end_to_end_fetch() {
 				silent: true
 			})
 		},
-		MockStdin("hunter2\n")
+		IoMode::TestMockedInput(b"hunter2")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::SUCCESS);
@@ -139,7 +109,7 @@ async fn end_to_end_fetch() {
 				silent: true
 			})
 		},
-		MockStdin("hunter2\n")
+		IoMode::TestMockedInput(b"hunter2")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::SUCCESS);
@@ -156,7 +126,7 @@ async fn end_to_end_fetch() {
 				silent: true
 			})
 		},
-		MockStdin("not_hunter2\n")
+		IoMode::TestMockedInput(b"not_hunter2")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::FAILURE);
@@ -180,7 +150,7 @@ async fn end_to_end_chaff() {
 				silent: true
 			})
 		},
-		EmptyMockStdin
+		IoMode::TestMockedInput(&[])
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::SUCCESS);
@@ -193,7 +163,7 @@ async fn end_to_end_chaff() {
 				silent: true
 			})
 		},
-		MockStdin("hunter2\n")
+		IoMode::TestMockedInput(b"hunter2")
 	).await;
 
 	assert_eq!(result, std::process::ExitCode::FAILURE);

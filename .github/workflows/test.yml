@@ -13,6 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+    - run: cargo build --verbose
     - run: cargo test --verbose
 
   test-nix:

@@ -25,7 +25,7 @@ fn handle_err(result: Result<(), ()>) -> std::process::ExitCode {
 	}
 }
 
-async fn run_with_io<B: io::IoBundle>(cli: cli::Cli, io: B) -> std::process::ExitCode {
+async fn run_with_io(cli: cli::Cli, io: io::IoMode) -> std::process::ExitCode {
 	match cli.command {
 		cli::Command::Enc(args) => handle_err(enc::enc(args, io).await),
 		cli::Command::Dec(args) => handle_err(dec::dec_file(args, io).await),
@@ -35,5 +35,5 @@ async fn run_with_io<B: io::IoBundle>(cli: cli::Cli, io: B) -> std::process::Exi
 }
 
 pub async fn run(cli: cli::Cli) -> std::process::ExitCode {
-	run_with_io(cli, io::InteractiveIo).await
+	run_with_io(cli, io::IoMode::Interactive).await
 }

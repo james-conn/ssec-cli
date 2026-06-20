@@ -5,12 +5,12 @@ use rand::rngs::SysRng;
 use indicatif::{ProgressBar, ProgressStyle};
 use crate::cli::EncArgs;
 use crate::password::prompt_password;
-use crate::io::IoBundle;
+use crate::io::IoMode;
 use crate::{DEFINITE_BAR_STYLE, BYTES_PER_POLL};
 
 const SPINNER_STYLE: &str = "{spinner} deriving encryption key";
 
-pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
+pub async fn enc(args: EncArgs, io: IoMode) -> Result<(), ()> {
 	let password = prompt_password(io).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
 	})?;
@@ -33,7 +33,7 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 		return Ok(());
 	}
 
-	let progress = match B::is_interactive() && !args.silent {
+	let progress = match io.is_interactive() && !args.silent {
 		true => ProgressBar::new(f_in_len),
 		false => ProgressBar::hidden()
 	};
@@ -41,7 +41,7 @@ pub async fn enc<B: IoBundle>(args: EncArgs, io: B) -> Result<(), ()> {
 	let progress_read = progress.wrap_async_read(f_in);
 	let s = tokio_util::io::ReaderStream::with_capacity(progress_read, buf_size);
 	let mut enc = tokio::task::spawn_blocking(move || {
-		let spinner = match B::is_interactive() && !args.silent {
+		let spinner = match io.is_interactive() && !args.silent {
 			true => ProgressBar::new_spinner(),
 			false => ProgressBar::hidden()
 		};

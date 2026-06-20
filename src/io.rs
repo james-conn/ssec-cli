@@ -1,31 +1,13 @@
-pub trait IoBundle: Send + 'static {
-	type IoRead: std::io::BufRead;
-	type IoWrite: std::io::Write;
-
-	/// if this is `true` then all other methods are `unimplemented!()` and will panic if called
-	fn is_interactive() -> bool {
-		false
-	}
-
-	fn get_bufread(&self) -> Self::IoRead;
-	fn get_write(&self) -> Self::IoWrite;
+#[derive(Debug, Clone, Copy)]
+pub enum IoMode {
+	Interactive,
+	#[cfg(test)]
+	TestMockedInput(&'static [u8])
 }
 
-pub struct InteractiveIo;
-
-impl IoBundle for InteractiveIo {
-	type IoRead = std::io::Empty;
-	type IoWrite = std::io::Sink;
-
-	fn is_interactive() -> bool {
-		true
-	}
-
-	fn get_bufread(&self) -> Self::IoRead {
-		unimplemented!()
-	}
-
-	fn get_write(&self) -> Self::IoWrite {
-		unimplemented!()
+impl IoMode {
+	#[inline]
+	pub fn is_interactive(&self) -> bool {
+		matches!(self, IoMode::Interactive)
 	}
 }

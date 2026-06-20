@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use crate::cli::{DecArgs, FetchArgs};
 use crate::file::new_async_tempfile;
 use crate::password::prompt_password;
-use crate::io::IoBundle;
+use crate::io::IoMode;
 use crate::{DEFINITE_BAR_STYLE, INDEFINITE_BAR_STYLE, BYTES_PER_POLL};
 
 const SPINNER_STYLE: &str = "{spinner} deriving decryption key";
@@ -115,7 +115,7 @@ where
 	Ok(())
 }
 
-pub async fn dec_file<B: IoBundle>(args: DecArgs, io: B) -> Result<(), ()> {
+pub async fn dec_file(args: DecArgs, io: IoMode) -> Result<(), ()> {
 	let password = prompt_password(io).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
 	})?;
@@ -135,12 +135,12 @@ pub async fn dec_file<B: IoBundle>(args: DecArgs, io: B) -> Result<(), ()> {
 		s,
 		password,
 		args.out_file,
-		B::is_interactive() && !args.silent,
+		io.is_interactive() && !args.silent,
 		Some(f_in_metadata.len())
 	).await
 }
 
-pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
+pub async fn dec_fetch(args: FetchArgs, io: IoMode) -> Result<(), ()> {
 	let password = prompt_password(io).await.map_err(|e| {
 		eprintln!("failed to read password interactively: {e}");
 	})?;
@@ -157,7 +157,7 @@ pub async fn dec_fetch<B: IoBundle>(args: FetchArgs, io: B) -> Result<(), ()> {
 		s,
 		password,
 		args.out_file,
-		B::is_interactive() && !args.silent,
+		io.is_interactive() && !args.silent,
 		enc_len
 	).await
 }

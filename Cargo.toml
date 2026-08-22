@@ -7,6 +7,7 @@ categories = [ "command-line-utilities", "security" ]
 authors = [ "James Connolly <me@j-conn.com>" ]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/james-conn/ssec-cli"
+rust-version = "1.95"
 default-run = "ssec"
 
 include = [

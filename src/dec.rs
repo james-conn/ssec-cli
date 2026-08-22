@@ -1,4 +1,4 @@
-use ssec_core::decrypt::{Decrypt, DecryptArgs, SsecHeaderError};
+use ssec_core::decrypt::{Decrypt, DecryptArgs, DecryptStreamError, SsecHeaderError};
 use futures_util::{Stream, StreamExt};
 use tokio::io::AsyncWriteExt;
 use zeroize::Zeroizing;
@@ -100,7 +100,13 @@ where
 	while let Some(bytes) = dec.next().await {
 		let b = match bytes {
 			Ok(b) => b,
-			Err(e) => {
+			Err(DecryptStreamError::TooShort) => {
+				bail!(progress, "input was too short to have been a valid SSEC file");
+			},
+			Err(DecryptStreamError::IntegrityFailed) => {
+				bail!(progress, "input has been tampered with, refusing to finalize decryption");
+			},
+			Err(DecryptStreamError::Stream(e)) => {
 				bail!(progress, "{e}");
 			},
 		};
